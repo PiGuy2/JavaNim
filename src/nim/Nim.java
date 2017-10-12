@@ -49,7 +49,7 @@ public class Nim {
 	}
 
 	private void printInstructions () {
-		// TODO add instructions
+		// todo add instructions
 	}
 
 	private void selectStacks () {
@@ -75,14 +75,29 @@ public class Nim {
 	private void doUserMove () {
 		System.out.println("Stacks:");
 		System.out.println(printStack(1));
-		System.out.println("Which stack would you like to take from: "); // TODO switch to user input
-		// TODO user move
+		System.out.println(printStack(2));
+		System.out.println(printStack(3));
+		int s = UserInput.getStackFromUser("Which stack would you like to take from: ", getStack(1) > 0, getStack(2) > 0, getStack(3) > 0);
+		int t = UserInput.getNumFromUser("How many would you like to take: ", getStack(s));
+		stacks[s - 1] -= t;
 		moveN++;
 	}
 
 	private void doCPUmove () {
-		System.out.println("The CPU removed " + "" + " from stack " + "" + ".");
-		// TODO add CPU player
+		int stack;
+		int amount;
+		if (CPUgood) {
+			int nimSum = (stacks[0] ^ stacks[1]) ^ stacks[2];
+			stack = maxIndex(stacks);
+			int newAmount = stacks[stack] ^ nimSum;
+			amount = stacks[stack] - newAmount;
+		} else {
+			Random rand = new Random();
+			stack = rand.nextInt(3);
+			amount = rand.nextInt(stacks[stack]) + 1;
+		}
+		stacks[stack] -= amount;
+		System.out.println("The CPU removed " + amount + " from stack " + (stack + 1) + ".");
 	}
 
 	private String formatNum (int n) {
@@ -94,7 +109,7 @@ public class Nim {
 	}
 
 	private String printStack (int n) {
-		String r = "Stack " + n + " (" + getStack(n) + "): ";
+		String r = "Stack " + n + " (" + formatNum(getStack(n)) + "): ";
 		for (int i = 0; i < getStack(n); i++) {
 			r += "*";
 		}
@@ -110,6 +125,23 @@ public class Nim {
 	}
 
 	public void win () {
-		// TODO function to print who won
+		System.out.println("Game over");
+		if (normGame == userLast) {
+			System.out.println("You won! :)");
+		} else {
+			System.out.println("You lost. :(");
+		}
+	}
+
+	private int maxIndex (int a[]) {
+		int index = 0;
+		int largest = Integer.MIN_VALUE;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] > largest) {
+				largest = a[i];
+				index = i;
+			}
+		}
+		return index;
 	}
 }
