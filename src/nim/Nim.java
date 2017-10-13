@@ -12,6 +12,8 @@ public class Nim {
 	private int stacks[];
 	private boolean userLast;
 
+	private Random rand;
+
 	public Nim (boolean normalGame) {
 		Random r = new Random();
 		normGame = normalGame;
@@ -19,10 +21,7 @@ public class Nim {
 		stackSize = 15;
 		userLast = false;
 
-		System.out.println("Welcome to the Nim game!");
-		printInstructions();
-
-		selectStacks();
+		ini();
 	}
 
 	public Nim (boolean normalGame, boolean CPUisGood) {
@@ -31,10 +30,7 @@ public class Nim {
 		stackSize = 15;
 		userLast = false;
 
-		System.out.println("Welcome to the Nim game!");
-		printInstructions();
-
-		selectStacks();
+		ini();
 	}
 
 	public Nim (boolean normalGame, boolean CPUisGood, int stack) {
@@ -42,8 +38,14 @@ public class Nim {
 		CPUgood = CPUisGood;
 		stackSize = stack;
 
+		ini();
+	}
+
+	private void ini () {
 		System.out.println("Welcome to the Nim game!");
 		printInstructions();
+
+		rand = new Random();
 
 		selectStacks();
 	}
@@ -53,7 +55,6 @@ public class Nim {
 	}
 
 	private void selectStacks () {
-		Random rand = new Random();
 		stacks = new int [3];
 		stacks[0] = rand.nextInt(stackSize) + 1;
 		stacks[1] = rand.nextInt(stackSize) + 1;
@@ -73,11 +74,9 @@ public class Nim {
 	}
 
 	private void doUserMove () {
-		System.out.println("Stacks:");
-		System.out.println(printStack(1));
-		System.out.println(printStack(2));
-		System.out.println(printStack(3));
-		int s = UserInput.getStackFromUser("Which stack would you like to take from: ", getStack(1) > 0, getStack(2) > 0, getStack(3) > 0);
+		printStacks();
+		int s = UserInput.getStackFromUser("Which stack would you like to take from: ", getStack(1) > 0,
+				getStack(2) > 0, getStack(3) > 0);
 		int t = UserInput.getNumFromUser("How many would you like to take: ", getStack(s));
 		stacks[s - 1] -= t;
 		moveN++;
@@ -87,13 +86,40 @@ public class Nim {
 		int stack;
 		int amount;
 		if (CPUgood) {
-			int nimSum = (stacks[0] ^ stacks[1]) ^ stacks[2];
-			stack = maxIndex(stacks);
-			int newAmount = stacks[stack] ^ nimSum;
-			amount = stacks[stack] - newAmount;
+			if (!((getStack(1) > 0 ^ getStack(2) > 0) ^ getStack(3) > 0) && !normGame) {
+				if (getStack(1) > 0 && getStack(2) > 0 && getStack(3) > 0 && !normGame) {
+					int nimSum = (stacks[0] ^ stacks[1]) ^ stacks[2];
+					if (nimSum == 0) {
+						stack = randStack();
+						amount = rand.nextInt(stacks[stack]) + 1;
+					} else {
+						stack = maxIndex(stacks);
+						int newAmount = stacks[stack] ^ nimSum;
+						amount = stacks[stack] - newAmount;
+					}
+				} else {
+					stack = maxIndex(stacks);
+					stacks[stack] -= 1000;
+					int medIndex = maxIndex(stacks);
+					stacks[stack] += 1000;
+					amount = stacks[stack] - stacks[medIndex];
+					if (amount == 0) {
+						amount = 1;
+					}
+				}
+			} else {
+				stack = maxIndex(stacks);
+				if (normGame) {
+					amount = stacks[stack];
+				} else {
+					amount = stacks[stack] - 1;
+				}
+				if (amount == 0) {
+					amount = 1;
+				}
+			}
 		} else {
-			Random rand = new Random();
-			stack = rand.nextInt(3);
+			stack = randStack();
 			amount = rand.nextInt(stacks[stack]) + 1;
 		}
 		stacks[stack] -= amount;
@@ -143,5 +169,22 @@ public class Nim {
 			}
 		}
 		return index;
+	}
+
+	private void printStacks () {
+		System.out.println("Stacks:");
+		System.out.println("\t" + printStack(1));
+		System.out.println("\t" + printStack(2));
+		System.out.println("\t" + printStack(3));
+		System.out.println("Nim sum: " + ((stacks[0] ^ stacks[1]) ^ stacks[2]));
+	}
+
+	private int randStack () {
+		while (true) {
+			int r = rand.nextInt(3);
+			if (stacks[r] > 0) {
+				return r;
+			}
+		}
 	}
 }
